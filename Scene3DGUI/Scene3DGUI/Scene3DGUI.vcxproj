@@ -72,28 +72,28 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)..\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\bin\$(Platform)\$(Configuration)\$(ProjectName)</IntDir>
+    <IntDir>$(SolutionDir)..\temp\$(Platform)\$(Configuration)\$(ProjectName)</IntDir>
     <IncludePath>$(SolutionDir)3rdparty\pcl\include\pcl-1.13;$(SolutionDir)3rdparty\pcl\3rdParty\Boost\include\boost-1_80;$(SolutionDir)3rdparty\pcl\3rdParty\Eigen\eigen3;$(SolutionDir)3rdparty\pcl\3rdParty\FLANN\include;$(SolutionDir)3rdparty\pcl\3rdParty\OpenNI2\Include;$(SolutionDir)3rdParty\Qhull\include;$(SolutionDir)3rdparty\pcl\3rdParty\VTK\include\vtk-9.2</IncludePath>
     <LibraryPath>$(SolutionDir)3rdparty\pcl\lib;$(SolutionDir)3rdparty\pcl\3rdParty\Boost\lib;$(SolutionDir)3rdparty\pcl\3rdParty\FLANN\lib;$(SolutionDir)3rdparty\pcl\3rdParty\Qhull\lib;$(SolutionDir)3rdparty\pcl\3rdParty\VTK\lib;$(SolutionDir)3rdparty\pcl\3rdParty\OpenNI2\Lib;$(SolutionDir)3rdparty\glfw\lib-vc2022;$(LibraryPath)</LibraryPath>
     <ExternalIncludePath>$(SolutionDir)3rdparty\glad\include;$(SolutionDir)3rdparty\glfw\include;$(SolutionDir)Scene3DGUI\imgui-docking;$(SolutionDir)3rdparty\glm-master;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)..\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\bin\$(Platform)\$(Configuration)\$(ProjectName)</IntDir>
+    <IntDir>$(SolutionDir)..\temp\$(Platform)\$(Configuration)\$(ProjectName)</IntDir>
     <IncludePath>$(SolutionDir)3rdparty\pcl\include\pcl-1.13;$(SolutionDir)3rdparty\pcl\3rdParty\Boost\include\boost-1_80;$(SolutionDir)3rdparty\pcl\3rdParty\Eigen\eigen3;$(SolutionDir)3rdparty\pcl\3rdParty\FLANN\include;$(SolutionDir)3rdparty\pcl\3rdParty\OpenNI2\Include;$(SolutionDir)3rdParty\Qhull\include;$(SolutionDir)3rdparty\pcl\3rdParty\VTK\include\vtk-9.2</IncludePath>
     <LibraryPath>$(SolutionDir)3rdparty\pcl\lib;$(SolutionDir)3rdparty\pcl\3rdParty\Boost\lib;$(SolutionDir)3rdparty\pcl\3rdParty\FLANN\lib;$(SolutionDir)3rdparty\pcl\3rdParty\Qhull\lib;$(SolutionDir)3rdparty\pcl\3rdParty\VTK\lib;$(SolutionDir)3rdparty\pcl\3rdParty\OpenNI2\Lib;$(SolutionDir)3rdparty\glfw\lib-vc2022;$(LibraryPath)</LibraryPath>
     <ExternalIncludePath>$(SolutionDir)3rdparty\glad\include;$(SolutionDir)3rdparty\glfw\include;$(SolutionDir)Scene3DGUI\imgui-docking;$(SolutionDir)3rdparty\glm-master;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)..\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\bin\$(Platform)\$(Configuration)\$(ProjectName)</IntDir>
+    <IntDir>$(SolutionDir)..\temp\$(Platform)\$(Configuration)\$(ProjectName)</IntDir>
     <IncludePath>$(SolutionDir)3rdparty\pcl\include\pcl-1.13;$(SolutionDir)3rdparty\pcl\3rdParty\Boost\include\boost-1_80;$(SolutionDir)3rdparty\pcl\3rdParty\Eigen\eigen3;$(SolutionDir)3rdparty\pcl\3rdParty\FLANN\include;$(SolutionDir)3rdparty\pcl\3rdParty\OpenNI2\Include;$(SolutionDir)3rdParty\Qhull\include;$(SolutionDir)3rdparty\pcl\3rdParty\VTK\include\vtk-9.2</IncludePath>
     <LibraryPath>$(SolutionDir)3rdparty\pcl\lib;$(SolutionDir)3rdparty\pcl\3rdParty\Boost\lib;$(SolutionDir)3rdparty\pcl\3rdParty\FLANN\lib;$(SolutionDir)3rdparty\pcl\3rdParty\Qhull\lib;$(SolutionDir)3rdparty\pcl\3rdParty\VTK\lib;$(SolutionDir)3rdparty\pcl\3rdParty\OpenNI2\Lib;$(SolutionDir)3rdparty\glfw\lib-vc2022;$(LibraryPath)</LibraryPath>
     <ExternalIncludePath>$(SolutionDir)3rdparty\glad\include;$(SolutionDir)3rdparty\glfw\include;$(SolutionDir)Scene3DGUI\imgui-docking;$(SolutionDir)3rdparty\glm-master;$(ExternalIncludePath)</ExternalIncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)..\bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\bin\$(Platform)\$(Configuration)\$(ProjectName)</IntDir>
+    <IntDir>$(SolutionDir)..\temp\$(Platform)\$(Configuration)\$(ProjectName)</IntDir>
     <IncludePath>$(SolutionDir)3rdparty\pcl\include\pcl-1.13;$(SolutionDir)3rdparty\pcl\3rdParty\Boost\include\boost-1_80;$(SolutionDir)3rdparty\pcl\3rdParty\Eigen\eigen3;$(SolutionDir)3rdparty\pcl\3rdParty\FLANN\include;$(SolutionDir)3rdparty\pcl\3rdParty\OpenNI2\Include;$(SolutionDir)3rdParty\Qhull\include;$(SolutionDir)3rdparty\pcl\3rdParty\VTK\include\vtk-9.2</IncludePath>
     <LibraryPath>$(SolutionDir)3rdparty\pcl\lib;$(SolutionDir)3rdparty\pcl\3rdParty\Boost\lib;$(SolutionDir)3rdparty\pcl\3rdParty\FLANN\lib;$(SolutionDir)3rdparty\pcl\3rdParty\Qhull\lib;$(SolutionDir)3rdparty\pcl\3rdParty\VTK\lib;$(SolutionDir)3rdparty\pcl\3rdParty\OpenNI2\Lib;$(SolutionDir)3rdparty\glfw\lib-vc2022;$(LibraryPath)</LibraryPath>
     <ExternalIncludePath>$(SolutionDir)3rdparty\glad\include;$(SolutionDir)3rdparty\glfw\include;$(SolutionDir)Scene3DGUI\imgui-docking;$(SolutionDir)3rdparty\glm-master;$(ExternalIncludePath)</ExternalIncludePath>
