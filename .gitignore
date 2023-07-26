@@ -1,3 +1,5 @@
 /bin/*
 /temp/*
 /Scene3DGUI/.vs
+/Scene3DGUI/3rdparty
+/Scene3DGUI/resource
