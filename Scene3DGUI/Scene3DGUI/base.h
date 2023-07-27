@@ -10,6 +10,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <pcl\io\pcd_io.h>
 #include <vector>
+#include <memory>
 #include "imgui.h"
 #include "backends\imgui_impl_glfw.h"
 #include "backends\imgui_impl_opengl3.h"
