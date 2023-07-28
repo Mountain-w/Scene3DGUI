@@ -138,7 +138,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     }
 }
 
-int main()
+int pcdVis()
 {
     // ≥ı ºªØ glfw
     glfwInit();
@@ -188,5 +188,10 @@ int main()
         glfwPollEvents();
     }
     glfwTerminate();
+    return 0;
+}
+
+int main()
+{
     return 0;
 }

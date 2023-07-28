@@ -19,6 +19,9 @@
     <Filter Include="资源文件\glsl">
       <UniqueIdentifier>{b3335163-beb9-4236-a682-82f6eb795068}</UniqueIdentifier>
     </Filter>
+    <Filter Include="资源文件\fronts">
+      <UniqueIdentifier>{56cc5469-9fc7-4342-b4a6-eaa1e6c5846b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
