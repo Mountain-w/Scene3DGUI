@@ -60,6 +60,11 @@ Geometry::AABB::AABB(Eigen::RowVector3f _position, Eigen::RowVector3f _size)
 	transform.update(_matrix);
 };
 
+void Geometry::AABB::update()
+{
+	Eigen::MatrixXf cornerPoints = transform.getCurMatrix() * m_corners.transpose();
+	std::cout << cornerPoints;
+};
 
 Geometry::OOBB::OOBB(Eigen::RowVector3f _position, Eigen::RowVector3f _size, Eigen::RowVector3f _euler)
 {
@@ -88,8 +93,5 @@ Geometry::OOBB::OOBB(Eigen::RowVector3f _position, Eigen::RowVector3f _size, Eig
 
 	affine.translation() << m_position(0), m_position(1), m_position(2);
 	Eigen::Matrix4f* _matrix = new Eigen::Matrix4f(affine.matrix());
-	Eigen::Matrix4f* _matrix_inv = new Eigen::Matrix4f(affine.matrix().inverse());
 	transform.update(_matrix);
-	transform.update(_matrix_inv);
-	std::cout << transform.getCurMatrix();
 };

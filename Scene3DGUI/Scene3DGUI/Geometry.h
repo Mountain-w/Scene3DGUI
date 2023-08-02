@@ -31,11 +31,19 @@ namespace Geometry
 		AABB(Eigen::RowVector3f _position, Eigen::RowVector3f _size);
 		~AABB() {};
 
+		void update();
+	
+	public:
+		GLuint vao;						// 用于可视化
+
 	protected:
-		Eigen::RowVector3f m_position;	// 中心点
 		Eigen::RowVector3f m_size;		// 长宽高
+		Eigen::RowVector3f m_position;	// 中心点
+
+		TransformMoudle transform;		// 变换模块
 		Eigen::Matrix<float, 8, 4> m_corners;
-		TransformMoudle transform;  // 变换模块
+
+		GLuint vbo;
 	};
 
 	class OOBB: public AABB

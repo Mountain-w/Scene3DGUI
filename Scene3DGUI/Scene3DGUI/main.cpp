@@ -306,9 +306,10 @@ int testMoveObj()
 {
     Eigen::RowVector3f pos(2.0f, 2.0f, 2.0f);
     Eigen::RowVector3f size(4.0f, 4.0f, 4.0f);
-    Eigen::RowVector3f euler(0.0f, 0.0f, glm::radians(90.0f));
+    Eigen::RowVector3f euler(0.0f, 0.0f, glm::radians(0.0f));
     Geometry::AABB aabb(pos, size);
     Geometry::OOBB oobb(pos, size, euler);
+    oobb.update();
     return 0;
 }
 
