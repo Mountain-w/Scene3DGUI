@@ -22,6 +22,12 @@
     <Filter Include="资源文件\fronts">
       <UniqueIdentifier>{56cc5469-9fc7-4342-b4a6-eaa1e6c5846b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\common">
+      <UniqueIdentifier>{988a4f3e-203d-4128-9b99-05e5d80a603a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\GUI">
+      <UniqueIdentifier>{41dc96f9-04dc-4aff-ad03-337bb6f1bb82}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -58,15 +64,18 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Shader.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Status.cpp">
-      <Filter>源文件</Filter>
+      <Filter>源文件\common</Filter>
     </ClCompile>
     <ClCompile Include="ffImage.cpp">
+      <Filter>源文件\common</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>源文件\common</Filter>
+    </ClCompile>
+    <ClCompile Include="Status.cpp">
+      <Filter>源文件\common</Filter>
+    </ClCompile>
+    <ClCompile Include="Geometry.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -119,6 +128,9 @@
     <ClInclude Include="ffImage.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Geometry.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="glsl\fragmentShader.glsl">
@@ -127,5 +139,10 @@
     <None Include="glsl\vertexShader.glsl">
       <Filter>资源文件\glsl</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="fronts\kaiu.ttf">
+      <Filter>资源文件\fronts</Filter>
+    </Font>
   </ItemGroup>
 </Project>

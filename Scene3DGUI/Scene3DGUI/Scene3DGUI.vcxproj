@@ -162,6 +162,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="demo.cpp" />
     <ClCompile Include="ffImage.cpp" />
+    <ClCompile Include="Geometry.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="imgui-docking\backends\imgui_impl_glfw.cpp" />
     <ClCompile Include="imgui-docking\backends\imgui_impl_opengl3.cpp" />
@@ -179,6 +180,7 @@
     <ClInclude Include="base.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="ffImage.h" />
+    <ClInclude Include="Geometry.h" />
     <ClInclude Include="imgui-docking\backends\imgui_impl_glfw.h" />
     <ClInclude Include="imgui-docking\backends\imgui_impl_opengl3.h" />
     <ClInclude Include="imgui-docking\backends\imgui_impl_opengl3_loader.h" />
@@ -196,6 +198,9 @@
   <ItemGroup>
     <None Include="glsl\fragmentShader.glsl" />
     <None Include="glsl\vertexShader.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="fronts\kaiu.ttf" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
