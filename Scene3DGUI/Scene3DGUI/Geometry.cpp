@@ -33,6 +33,14 @@ void Geometry::TransformMoudle::undo()
 	m_matrixList.pop_back();
 };
 
+void Geometry::AABB::setColor(int r, int g, int b, int a)
+{
+	m_color(0) = r;
+	m_color(1) = g;
+	m_color(2) = b;
+	m_color(3) = a;
+};
+
 Geometry::AABB::AABB(Eigen::RowVector3f _position, Eigen::RowVector3f _size)
 {
 	m_position = _position;
@@ -60,10 +68,67 @@ Geometry::AABB::AABB(Eigen::RowVector3f _position, Eigen::RowVector3f _size)
 	transform.update(_matrix);
 };
 
+void Geometry::AABB::move(float x, float y, float z)
+{
+	Eigen::Affine3f affine = Eigen::Affine3f::Identity();
+	affine.translation() << x, y, z;
+	Eigen::Matrix4f* _matrix = new Eigen::Matrix4f(affine.matrix());
+	transform.update(_matrix);
+	update();
+};
+void Geometry::AABB::undo()
+{
+	transform.undo();
+	update();
+};
+
 void Geometry::AABB::update()
 {
-	Eigen::MatrixXf cornerPoints = transform.getCurMatrix() * m_corners.transpose();
-	std::cout << cornerPoints;
+	Eigen::MatrixXf cornerPoints = (transform.getCurMatrix() * m_corners.transpose()).transpose();
+
+	std::vector<GLfloat> vertexs;
+	for (int row = 0; row < cornerPoints.rows(); row++)
+	{
+		vertexs.push_back(cornerPoints(row, 0));
+		vertexs.push_back(cornerPoints(row, 1));
+		vertexs.push_back(cornerPoints(row, 2));
+		vertexs.push_back(0);
+		vertexs.push_back(m_color(0));
+		vertexs.push_back(m_color(1));
+		vertexs.push_back(m_color(2));
+		vertexs.push_back(m_color(3));
+	}
+
+	GLuint indices[] = {
+		0, 1, 1, 7, 7, 2, 2, 0,
+		3, 6, 6, 4, 4, 5, 5, 3,
+		0, 3, 1, 6, 7, 4, 2, 5
+	};
+
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	glGenBuffers(1, &vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	
+	glBufferData(GL_ARRAY_BUFFER, vertexs.size() * sizeof(GLfloat), vertexs.data(), GL_STATIC_DRAW);
+
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)0);
+	glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(sizeof(GLfloat) * 3));
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(sizeof(GLfloat) * 4));
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+
+	// EBO
+	glGenBuffers(1, &ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	// ½â°óVAO¡¢VBO¡¢EBO
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 };
 
 Geometry::OOBB::OOBB(Eigen::RowVector3f _position, Eigen::RowVector3f _size, Eigen::RowVector3f _euler)

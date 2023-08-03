@@ -31,7 +31,10 @@ namespace Geometry
 		AABB(Eigen::RowVector3f _position, Eigen::RowVector3f _size);
 		~AABB() {};
 
+		void move(float x, float y, float z);
+		void undo();
 		void update();
+		void setColor(int r, int g, int b, int a);
 	
 	public:
 		GLuint vao;						// 用于可视化
@@ -44,6 +47,8 @@ namespace Geometry
 		Eigen::Matrix<float, 8, 4> m_corners;
 
 		GLuint vbo;
+		GLuint ebo;
+		Eigen::RowVector4i m_color{255, 0, 255, 255};
 	};
 
 	class OOBB: public AABB

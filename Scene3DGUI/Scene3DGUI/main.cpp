@@ -14,8 +14,14 @@ glm::mat4 _projMatrix(1.0f);
 int _width = 1920;
 int _height = 1080;
 float pointSize = 1.0f;
-const char* pcdPath = R"(D:\SVN\MindFlow\需求列表\20230721-717\output\data\2023-04-20-06-22-09\global_map.pcd)";
+const char* pcdPath = R"(D:\pld\HZ\bev_lane_base_reconstruction_1th_for_82_sample\data\2023-04-20-06-21-39\2023-04-20-06-21-39\global_map.pcd)";
 //const char* pcdPath = R"(D:\pld\HZ\input\合众标注2023.02.28\localmap\1677121714733085184.pcd)";
+Eigen::RowVector3f pos(2.0f, 2.0f, 2.0f);
+Eigen::RowVector3f size(4.0f, 4.0f, 4.0f);
+Eigen::RowVector3f euler(0.0f, 0.0f, glm::radians(0.0f));
+Geometry::AABB aabb(pos, size);
+Geometry::OOBB oobb(pos, size, euler);
+
 
 // 渲染
 void rend(PointCloudInfo &_info)
@@ -29,6 +35,21 @@ void rend(PointCloudInfo &_info)
     glBindVertexArray(_info.VAO);
     glDrawArrays(GL_POINTS, 0, _info.pointNum);
     _shader.end();
+}
+
+// 渲染3D框
+void rend2(Geometry::OOBB &oobb)
+{
+    glPointSize(pointSize);
+    _camera.update();
+    _projMatrix = glm::perspective(glm::radians(45.0f), (float)_width / (float)_height, 0.1f, 500.0f);
+    _shader.start();
+    _shader.setMatrix("_viewMatrix", _camera.getMatrix());
+    _shader.setMatrix("_projMatrix", _projMatrix);
+    glBindVertexArray(oobb.vao);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+    _shader.end();
 
 }
 
@@ -38,6 +59,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
+// 摄像机移动
 void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -71,6 +93,47 @@ void processInput(GLFWwindow* window)
             return;
         }
         pointSize -= 0.5;
+    }
+}
+
+// 3D框移动
+void processInput2(GLFWwindow* window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    {
+        glfwSetWindowShouldClose(window, true);
+    }
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        oobb.move(1.0f, 0.0f, 0.0f);
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        oobb.move(-1.0f, 0.0f, 0.0f);
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        oobb.move(0.0f, 1.0f, 0.0f);
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        oobb.move(0.0f, -1.0f, 0.0f);
+    }
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+    {
+        pointSize += 0.5;
+    }
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    {
+        if (pointSize == 0)
+        {
+            return;
+        }
+        pointSize -= 0.5;
+    }
+    if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
+    {
+        oobb.undo();
     }
 }
 
@@ -304,12 +367,58 @@ int testImGui()
 
 int testMoveObj()
 {
-    Eigen::RowVector3f pos(2.0f, 2.0f, 2.0f);
-    Eigen::RowVector3f size(4.0f, 4.0f, 4.0f);
-    Eigen::RowVector3f euler(0.0f, 0.0f, glm::radians(0.0f));
-    Geometry::AABB aabb(pos, size);
-    Geometry::OOBB oobb(pos, size, euler);
+    // 初始化 glfw
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+
+    GLFWwindow* window = glfwCreateWindow(_width, _height, "Scene3D", NULL, NULL);
+    if (window == NULL)
+    {
+        std::cout << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+    glfwMakeContextCurrent(window);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return -1;
+    }
+
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, mouse_scroll_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
+
+    _camera.setSpeed(1.0f);
+    _shader.initShader(R"(glsl\vertexShader.glsl)", R"(glsl\fragmentShader.glsl)");
     oobb.update();
+    
+    PointCloudInfo info;
+    PointCloudService::loadPcd(pcdPath, info);
+    std::cout << "读取到：" << info.pointNum << " 个点" << std::endl;
+    
+    while (!glfwWindowShouldClose(window))
+    {
+        processInput2(window);
+
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
+        glViewport(0, 0, _width, _height);
+
+        rend(info);
+        rend2(oobb);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+    glfwTerminate();
+    return 0;
     return 0;
 }
 
