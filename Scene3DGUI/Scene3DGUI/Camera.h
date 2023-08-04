@@ -29,7 +29,9 @@ public:
 
 	glm::mat4 getMatrix();
 	void move(CAMERA_MOVE _mode);
+	void move(float xOffset, float yOffset);
 	void setSpeed(float _speed);
+	void setMoveSpeed(float _speed);
 
 	void pitch(float _yOffset);
 	void yaw(float _xOffset);
@@ -40,7 +42,8 @@ private:
 	glm::vec3 m_position;
 	glm::vec3 m_front;
 	glm::vec3 m_up;
-	float m_speed = 0.1f;
+	float m_speed = 0.1f;		// 鼠标滚轮控制相机前进后退速度
+	float m_moveSpeed = 0.03f; // 鼠标中键点击相机上下左右移动速度
 	float m_distance = 15.0f;
 
 	float m_pitch = 45.0f;

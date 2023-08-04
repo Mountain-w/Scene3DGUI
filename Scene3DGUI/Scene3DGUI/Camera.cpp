@@ -28,14 +28,6 @@ void Camera::move(CAMERA_MOVE _mode)
 {
 	switch (_mode)
 	{
-	case CAMERA_MOVE::MOVE_LEFT:
-		m_position -= glm::normalize(glm::cross(m_front, m_up)) * m_speed;
-		m_centerPosition -= glm::normalize(glm::cross(m_front, m_up)) * m_speed;
-		break;
-	case CAMERA_MOVE::MOVE_RIGHT:
-		m_position += glm::normalize(glm::cross(m_front, m_up)) * m_speed;
-		m_centerPosition += glm::normalize(glm::cross(m_front, m_up)) * m_speed;
-		break;
 	case CAMERA_MOVE::MOVE_FRONT:
 		if (m_distance < 3)
 		{
@@ -48,22 +40,31 @@ void Camera::move(CAMERA_MOVE _mode)
 		m_position -= 2.0f * m_speed * m_front;
 		m_distance = glm::length(m_centerPosition - m_position);
 		break;
-	case CAMERA_MOVE::MOVE_UP:
-		m_position += m_speed * m_front;
-		m_centerPosition += m_speed * m_front;
-		break;
-	case CAMERA_MOVE::MOVE_DOWN:
-		m_position -= m_speed * m_front;
-		m_centerPosition -= m_speed * m_front;
-		break;
 	default:
 		break;
 	}
 };
 
+void Camera::move(float _xOffset, float _yOffset)
+{
+	_xOffset = -_xOffset;
+	//横向移动
+	m_position += glm::normalize(glm::cross(m_front, m_up)) * _xOffset * m_moveSpeed;
+	m_centerPosition += glm::normalize(glm::cross(m_front, m_up)) * _xOffset * m_moveSpeed;
+
+	//纵向移动
+	m_position += glm::normalize(glm::cross(glm::cross(m_front, m_up), m_front)) * _yOffset * m_moveSpeed;
+	m_centerPosition += glm::normalize(glm::cross(glm::cross(m_front, m_up), m_front)) * _yOffset * m_moveSpeed;
+};
+
 void Camera::setSpeed(float _speed)
 {
 	m_speed = _speed;
+};
+
+void Camera::setMoveSpeed(float _speed)
+{
+	m_moveSpeed = _speed;
 };
 
 void Camera::pitch(float _yOffset)

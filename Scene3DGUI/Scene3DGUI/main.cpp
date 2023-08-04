@@ -14,7 +14,8 @@ glm::mat4 _projMatrix(1.0f);
 int _width = 1920;
 int _height = 1080;
 float pointSize = 1.0f;
-const char* pcdPath = R"(D:\pld\HZ\bev_lane_base_reconstruction_1th_for_82_sample\data\2023-04-20-06-21-39\2023-04-20-06-21-39\global_map.pcd)";
+//const char* pcdPath = R"(D:\pld\HZ\output\data\city_1\1684390331_000151000\RS128_1684390331_000151000.pcd)";
+const char* pcdPath = R"(D:\workplace\scene_001.pcd)";
 //const char* pcdPath = R"(D:\pld\HZ\input\合众标注2023.02.28\localmap\1677121714733085184.pcd)";
 Eigen::RowVector3f pos(2.0f, 2.0f, 2.0f);
 Eigen::RowVector3f size(4.0f, 4.0f, 4.0f);
@@ -46,6 +47,7 @@ void rend2(Geometry::OOBB &oobb)
     _shader.start();
     _shader.setMatrix("_viewMatrix", _camera.getMatrix());
     _shader.setMatrix("_projMatrix", _projMatrix);
+    oobb.update();
     glBindVertexArray(oobb.vao);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
@@ -65,22 +67,6 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, true);
-    }
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    {
-        _camera.move(CAMERA_MOVE::MOVE_UP);
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    {
-        _camera.move(CAMERA_MOVE::MOVE_DOWN);
-    }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    {
-        _camera.move(CAMERA_MOVE::MOVE_LEFT);
-    }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-    {
-        _camera.move(CAMERA_MOVE::MOVE_RIGHT);
     }
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     {
@@ -155,11 +141,10 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     switch (_status.curMode())
     {
     case MOUSESTATUS::LEFTCLICKED:
-        std::cout << "差值计算，x: " << _difference.x << ", y: " << _difference.y << std::endl;
         _camera.onMouseMove(_difference.x, _difference.y);
         break;
     case MOUSESTATUS::MIDDLECLICKED:
-
+        _camera.move((float)_difference.x, (float)_difference.y);
         break;
     case MOUSESTATUS::RIGHTCLICKED:
         break;
@@ -396,6 +381,7 @@ int testMoveObj()
 
     _camera.setSpeed(1.0f);
     _shader.initShader(R"(glsl\vertexShader.glsl)", R"(glsl\fragmentShader.glsl)");
+    oobb.setColor(255, 255, 0, 255);
     oobb.update();
     
     PointCloudInfo info;
