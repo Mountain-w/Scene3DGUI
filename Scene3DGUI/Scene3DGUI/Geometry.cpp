@@ -1,36 +1,40 @@
 #include "Geometry.h"
 
-Eigen::Matrix4f Geometry::TransformMoudle::getCurMatrix()
+Geometry::BoxInfo* Geometry::TransformMoudle::getCurInfo()
 {
-	if (m_matrixList.size() == 0)
+	if (m_boxInfos.size() == 0)
 	{
-		throw "变换矩阵未初始化。。。";
+		throw "未初始化。。。";
 	}
-	return *(m_matrixList.back());
+	return m_boxInfos.back();
 };
 
-void Geometry::TransformMoudle::update(Eigen::Matrix4f* _matrix)
+void Geometry::TransformMoudle::update(BoxInfo* _info)
 {
-	Eigen::Matrix4f* newMatrix;
-	if (m_matrixList.size() == 0)
-	{
-		newMatrix = _matrix;
-	}
-	else
-	{
-		newMatrix = new Eigen::Matrix4f((*_matrix) * (*(m_matrixList.back())));
-	}
-	m_matrixList.push_back(newMatrix);
+	m_boxInfos.push_back(_info);
 };
 
 void Geometry::TransformMoudle::undo()
 {
-	if (m_matrixList.size() <= 1)
+	if (m_boxInfos.size() <= 1)
 	{
 		return;
 	}
-	delete m_matrixList.back();
-	m_matrixList.pop_back();
+	delete m_boxInfos.back();
+	m_boxInfos.pop_back();
+};
+
+/*
+* 编辑3D框体：
+* 1. 移动
+* 2. 旋转（OOBB）
+* 3. 框体大小
+*/
+
+
+Geometry::AABB::AABB(Eigen::RowVector3f _position, Eigen::RowVector3f _size)
+{
+	m_curInfo = new Geometry::BoxInfo(_size, _position);
 };
 
 void Geometry::AABB::setColor(int r, int g, int b, int a)
@@ -39,13 +43,75 @@ void Geometry::AABB::setColor(int r, int g, int b, int a)
 	m_color(1) = g;
 	m_color(2) = b;
 	m_color(3) = a;
+	update();
 };
 
-Geometry::AABB::AABB(Eigen::RowVector3f _position, Eigen::RowVector3f _size)
+
+void Geometry::AABB::move(float x, float y, float z)
 {
-	m_position = _position;
-	m_size = _size;
-	m_corners <<
+	m_transform.update(m_curInfo);
+	m_curInfo->position[0] += x;
+	m_curInfo->position[1] += y;
+	m_curInfo->position[2] += z;
+	m_curInfo = new Geometry::BoxInfo(m_curInfo->size, m_curInfo->position);
+	update();
+};
+
+void Geometry::AABB::resize(RESIZETYPE _type, float _distance)
+{
+	m_transform.update(m_curInfo);
+	switch (_type)
+	{
+	case RESIZETYPE::UP:
+		if (m_curInfo->size[2] + _distance < 0.01f) break;
+		m_curInfo->size[2] += _distance;
+		m_curInfo->position += _distance / 2.0f * m_top.normalized();
+		break;
+	case RESIZETYPE::DOWN:
+		if (m_curInfo->size[2] + _distance < 0.01f) break;
+		m_curInfo->size[2] += _distance;
+		m_curInfo->position -= _distance / 2.0f * m_top.normalized();
+		break;
+	case RESIZETYPE::LEFT:
+		if (m_curInfo->size[1] + _distance < 0.01f) break;
+		m_curInfo->size[1] += _distance;
+		m_curInfo->position += _distance / 2.0f * m_left.normalized();
+		break;
+	case RESIZETYPE::RIGHT:
+		if (m_curInfo->size[1] + _distance < 0.01f) break;
+		m_curInfo->size[1] += _distance;
+		m_curInfo->position -= _distance / 2.0f * m_left.normalized();
+		break;
+	case RESIZETYPE::FRONT:
+		if (m_curInfo->size[0] + _distance < 0.01f) break;
+		m_curInfo->size[0] += _distance;
+		m_curInfo->position += _distance / 2.0f * m_front.normalized();
+		break;
+	case RESIZETYPE::BACK:
+		if (m_curInfo->size[0] + _distance < 0.01f) break;
+		m_curInfo->size[0] += _distance;
+		m_curInfo->position -= _distance / 2.0f * m_front.normalized();
+		break;
+	default:
+		break;
+	}
+	m_curInfo = new Geometry::BoxInfo(m_curInfo->size, m_curInfo->position);
+	update();
+};
+
+void Geometry::AABB::undo()
+{
+	m_transform.undo();
+	m_curInfo = m_transform.getCurInfo();
+	m_curInfo = new Geometry::BoxInfo(m_curInfo->size, m_curInfo->position);
+	update();
+};
+
+void Geometry::AABB::update()
+{
+	// 更新3D框角点位置
+	Eigen::MatrixXf corners(8, 4);
+    corners <<
 		-1, -1, -1, 1,
 		1, -1, -1, 1,
 		-1, 1, -1, 1,
@@ -54,37 +120,14 @@ Geometry::AABB::AABB(Eigen::RowVector3f _position, Eigen::RowVector3f _size)
 		-1, 1, 1, 1,
 		1, -1, 1, 1,
 		1, 1, -1, 1;
-
-	Eigen::RowVector3f scale = m_size / 2.0f;
+	Eigen::RowVector3f scale = m_curInfo->size / 2.0f;
 	for (int row = 0; row < 8; row++)
 	{
-		m_corners(row, 0) *= scale[0];
-		m_corners(row, 1) *= scale[1];
-		m_corners(row, 2) *= scale[2];
+		corners(row, 0) *= scale[0];
+		corners(row, 1) *= scale[1];
+		corners(row, 2) *= scale[2];
 	}
-	Eigen::Affine3f affine = Eigen::Affine3f::Identity();
-	affine.translation() << m_position(0), m_position(1), m_position(2);
-	Eigen::Matrix4f* _matrix = new Eigen::Matrix4f(affine.matrix());
-	transform.update(_matrix);
-};
-
-void Geometry::AABB::move(float x, float y, float z)
-{
-	Eigen::Affine3f affine = Eigen::Affine3f::Identity();
-	affine.translation() << x, y, z;
-	Eigen::Matrix4f* _matrix = new Eigen::Matrix4f(affine.matrix());
-	transform.update(_matrix);
-	update();
-};
-void Geometry::AABB::undo()
-{
-	transform.undo();
-	update();
-};
-
-void Geometry::AABB::update()
-{
-	Eigen::MatrixXf cornerPoints = (transform.getCurMatrix() * m_corners.transpose()).transpose();
+	Eigen::MatrixXf cornerPoints = (m_curInfo->matrix * corners.transpose()).transpose();
 
 	std::vector<GLfloat> vertexs;
 	for (int row = 0; row < cornerPoints.rows(); row++)
@@ -129,34 +172,14 @@ void Geometry::AABB::update()
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	// 更新前、左、上向量
+	Eigen::Vector4f top_homogeneous(m_top[0], m_top[1], m_top[2], 1.0f);
+	Eigen::Vector4f left_homogeneous(m_left[0], m_left[1], m_left[2], 1.0f);
+	Eigen::Vector4f front_homogeneous(m_front[0], m_front[1], m_front[2], 1.0f);
 };
 
 Geometry::OOBB::OOBB(Eigen::RowVector3f _position, Eigen::RowVector3f _size, Eigen::RowVector3f _euler)
 {
-	m_position = _position;
-	m_size = _size;
-	m_euler = _euler;
-	m_corners <<
-		-1, -1, -1, 1,
-		1, -1, -1, 1,
-		-1, 1, -1, 1,
-		-1, -1, 1, 1,
-		1, 1, 1, 1,
-		-1, 1, 1, 1,
-		1, -1, 1, 1,
-		1, 1, -1, 1;
-
-	Eigen::RowVector3f scale = m_size / 2.0f;
-	for (int row = 0; row < 8; row++)
-	{
-		m_corners(row, 0) *= scale[0];
-		m_corners(row, 1) *= scale[1];
-		m_corners(row, 2) *= scale[2];
-	}
-	Eigen::Affine3f affine = Eigen::Affine3f::Identity();
-	affine = Eigen::AngleAxisf(m_euler(2), Eigen::Vector3f::UnitZ()) * Eigen::AngleAxisf(m_euler(1), Eigen::Vector3f::UnitY()) * Eigen::AngleAxisf(m_euler(0), Eigen::Vector3f::UnitX());
-
-	affine.translation() << m_position(0), m_position(1), m_position(2);
-	Eigen::Matrix4f* _matrix = new Eigen::Matrix4f(affine.matrix());
-	transform.update(_matrix);
+	m_curInfo = new Geometry::BoxInfo(_size, _position, _euler);
 };

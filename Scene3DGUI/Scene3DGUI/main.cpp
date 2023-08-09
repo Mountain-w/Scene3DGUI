@@ -15,8 +15,8 @@ int _width = 1920;
 int _height = 1080;
 float pointSize = 1.0f;
 //const char* pcdPath = R"(D:\pld\HZ\output\data\city_1\1684390331_000151000\RS128_1684390331_000151000.pcd)";
-const char* pcdPath = R"(D:\workplace\scene_001.pcd)";
-//const char* pcdPath = R"(D:\pld\HZ\input\合众标注2023.02.28\localmap\1677121714733085184.pcd)";
+//const char* pcdPath = R"(D:\workplace\scene_001.pcd)";
+const char* pcdPath = R"(D:\pld\HZ\input\合众标注2023.02.28\localmap\1677121714733085184.pcd)";
 Eigen::RowVector3f pos(2.0f, 2.0f, 2.0f);
 Eigen::RowVector3f size(4.0f, 4.0f, 4.0f);
 Eigen::RowVector3f euler(0.0f, 0.0f, glm::radians(0.0f));
@@ -107,15 +107,19 @@ void processInput2(GLFWwindow* window)
     }
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     {
-        pointSize += 0.5;
+        oobb.resize(Geometry::RESIZETYPE::UP, 0.03);
     }
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
     {
-        if (pointSize == 0)
-        {
-            return;
-        }
-        pointSize -= 0.5;
+        oobb.resize(Geometry::RESIZETYPE::DOWN, -0.03);
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+    {
+        oobb.resize(Geometry::RESIZETYPE::LEFT, 0.03);
+    }
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    {
+        oobb.resize(Geometry::RESIZETYPE::RIGHT, -0.03);
     }
     if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
     {
