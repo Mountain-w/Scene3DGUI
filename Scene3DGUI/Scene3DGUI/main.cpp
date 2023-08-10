@@ -14,12 +14,13 @@ glm::mat4 _projMatrix(1.0f);
 int _width = 1920;
 int _height = 1080;
 float pointSize = 1.0f;
+bool altPressed = false;
 //const char* pcdPath = R"(D:\pld\HZ\output\data\city_1\1684390331_000151000\RS128_1684390331_000151000.pcd)";
 //const char* pcdPath = R"(D:\workplace\scene_001.pcd)";
-const char* pcdPath = R"(D:\pld\HZ\input\ºÏÖÚ±ê×¢2023.02.28\localmap\1677121714733085184.pcd)";
+const char* pcdPath = R"(D:\pld\HZ\output\data\2023-04-20-06-21-39\lidar\global_map.pcd)";
 Eigen::RowVector3f pos(2.0f, 2.0f, 2.0f);
 Eigen::RowVector3f size(4.0f, 4.0f, 4.0f);
-Eigen::RowVector3f euler(0.0f, 0.0f, glm::radians(0.0f));
+Eigen::RowVector3f euler(0.0f, 0.0f, glm::radians(40.0f));
 Geometry::AABB aabb(pos, size);
 Geometry::OOBB oobb(pos, size, euler);
 
@@ -91,19 +92,19 @@ void processInput2(GLFWwindow* window)
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        oobb.move(1.0f, 0.0f, 0.0f);
+        oobb.moveX(1.0f);
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        oobb.move(-1.0f, 0.0f, 0.0f);
+        oobb.moveX(-1.0f);
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        oobb.move(0.0f, 1.0f, 0.0f);
+        oobb.moveY(1.0f);
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        oobb.move(0.0f, -1.0f, 0.0f);
+        oobb.moveY(-1.0f);
     }
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     {
@@ -125,6 +126,14 @@ void processInput2(GLFWwindow* window)
     {
         oobb.undo();
     }
+    if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_PRESS)
+    {
+        altPressed = true;
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT_ALT) == GLFW_RELEASE)
+    {
+        altPressed = false;
+    }
 }
 
 void mouse_scroll_callback(GLFWwindow* window, double xOffset, double yOffset)
@@ -145,16 +154,20 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     switch (_status.curMode())
     {
     case MOUSESTATUS::LEFTCLICKED:
-        _camera.onMouseMove(_difference.x, _difference.y);
+        if (altPressed) _camera.onMouseMove(_difference.x, _difference.y);
+        oobb.roll((float)_difference.x);
         break;
     case MOUSESTATUS::MIDDLECLICKED:
-        _camera.move((float)_difference.x, (float)_difference.y);
+        if (altPressed) _camera.move((float)_difference.x, (float)_difference.y);
+        oobb.pitch((float)_difference.x);
         break;
     case MOUSESTATUS::RIGHTCLICKED:
+        oobb.yaw((float)_difference.x);
         break;
     default:
         break;
     }
+    
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
@@ -382,6 +395,7 @@ int testMoveObj()
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, mouse_scroll_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
+    glEnable(GL_DEPTH_TEST);
 
     _camera.setSpeed(1.0f);
     _shader.initShader(R"(glsl\vertexShader.glsl)", R"(glsl\fragmentShader.glsl)");

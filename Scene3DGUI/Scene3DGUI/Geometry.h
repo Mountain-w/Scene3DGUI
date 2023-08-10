@@ -11,15 +11,15 @@ namespace Geometry
 			position = _position;
 			euler = _euler;
 			Eigen::Affine3f affine = Eigen::Affine3f::Identity();
-			affine = Eigen::AngleAxisf(euler(2), Eigen::Vector3f::UnitZ()) * Eigen::AngleAxisf(euler(1), Eigen::Vector3f::UnitY()) * Eigen::AngleAxisf(euler(0), Eigen::Vector3f::UnitX());
+			affine = Eigen::AngleAxisf(glm::radians(euler(2)), Eigen::Vector3f::UnitZ()) * Eigen::AngleAxisf(glm::radians(euler(1)), Eigen::Vector3f::UnitY()) * Eigen::AngleAxisf(glm::radians(euler(0)), Eigen::Vector3f::UnitX());
 			affine.translation() << position(0), position(1), position(2);
 			matrix = affine.matrix();
 		}
 		~BoxInfo(){}
 
-		Eigen::RowVector3f size;						// 长宽高
-		Eigen::RowVector3f position;					// 中心点
-		Eigen::RowVector3f euler;						// roll，pitch，yaw
+		Eigen::Vector3f size;						// 长宽高
+		Eigen::Vector3f position;					// 中心点
+		Eigen::Vector3f euler;						// roll，pitch，yaw
 		Eigen::Matrix4f matrix;
 	};
 	
@@ -64,7 +64,11 @@ namespace Geometry
 
 		void undo();									// 撤销修改操作
 		void update();									// 更新可视化对象
-		void move(float x, float y, float z);			// 移动
+		virtual void updateCurInfo();					// 更新当前boxinfo
+		void move(float x, float y, float z);			// 中心点移动
+		void moveX(float _distance);					// 朝向自身坐标系 x 移动
+		void moveY(float _distance);					// 朝向自身坐标系 y 移动
+		void moveZ(float _distance);					// 朝向自身坐标系 z 移动
 		void resize(RESIZETYPE _type, float _distance); // 修改3D框大小
 		void setColor(int r, int g, int b, int a);		// 设置颜色
 
@@ -90,6 +94,12 @@ namespace Geometry
 	public:
 		OOBB(Eigen::RowVector3f _position, Eigen::RowVector3f _size, Eigen::RowVector3f _euler);
 		~OOBB() {};
+
+		void yaw(float _degree);
+		void roll(float _degree);
+		void pitch(float _degree);
+		
+		void updateCurInfo() override;					// 更新当前boxinfo
 
 	protected:
 		Geometry::AABB aabb;							// 最小外接aabb

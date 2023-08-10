@@ -31,7 +31,6 @@ void Geometry::TransformMoudle::undo()
 * 3. 框体大小
 */
 
-
 Geometry::AABB::AABB(Eigen::RowVector3f _position, Eigen::RowVector3f _size)
 {
 	m_curInfo = new Geometry::BoxInfo(_size, _position);
@@ -46,6 +45,10 @@ void Geometry::AABB::setColor(int r, int g, int b, int a)
 	update();
 };
 
+void Geometry::AABB::updateCurInfo()
+{
+	m_curInfo = new Geometry::BoxInfo(m_curInfo->size, m_curInfo->position);
+};
 
 void Geometry::AABB::move(float x, float y, float z)
 {
@@ -53,7 +56,31 @@ void Geometry::AABB::move(float x, float y, float z)
 	m_curInfo->position[0] += x;
 	m_curInfo->position[1] += y;
 	m_curInfo->position[2] += z;
-	m_curInfo = new Geometry::BoxInfo(m_curInfo->size, m_curInfo->position);
+	updateCurInfo();
+	update();
+};
+
+void Geometry::AABB::moveX(float _distance)
+{
+	m_transform.update(m_curInfo);
+	m_curInfo->position += m_front.normalized() * _distance;
+	updateCurInfo();
+	update();
+};
+
+void Geometry::AABB::moveY(float _distance)
+{
+	m_transform.update(m_curInfo);
+	m_curInfo->position += m_left.normalized() * _distance;
+	updateCurInfo();
+	update();
+};
+
+void Geometry::AABB::moveZ(float _distance)
+{
+	m_transform.update(m_curInfo);
+	m_curInfo->position += m_top.normalized() * _distance;
+	updateCurInfo();
 	update();
 };
 
@@ -95,7 +122,7 @@ void Geometry::AABB::resize(RESIZETYPE _type, float _distance)
 	default:
 		break;
 	}
-	m_curInfo = new Geometry::BoxInfo(m_curInfo->size, m_curInfo->position);
+	updateCurInfo();
 	update();
 };
 
@@ -103,7 +130,7 @@ void Geometry::AABB::undo()
 {
 	m_transform.undo();
 	m_curInfo = m_transform.getCurInfo();
-	m_curInfo = new Geometry::BoxInfo(m_curInfo->size, m_curInfo->position);
+	updateCurInfo();
 	update();
 };
 
@@ -145,7 +172,7 @@ void Geometry::AABB::update()
 	GLuint indices[] = {
 		0, 1, 1, 7, 7, 2, 2, 0,
 		3, 6, 6, 4, 4, 5, 5, 3,
-		0, 3, 1, 6, 7, 4, 2, 5
+		0, 3, 1, 6, 7, 4, 2, 5,
 	};
 
 	glGenVertexArrays(1, &vao);
@@ -174,12 +201,83 @@ void Geometry::AABB::update()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	// 更新前、左、上向量
-	Eigen::Vector4f top_homogeneous(m_top[0], m_top[1], m_top[2], 1.0f);
-	Eigen::Vector4f left_homogeneous(m_left[0], m_left[1], m_left[2], 1.0f);
-	Eigen::Vector4f front_homogeneous(m_front[0], m_front[1], m_front[2], 1.0f);
+	Eigen::Vector4f top_homogeneous(0.0f, 0.0f, 1.0f, 1.0f);
+	Eigen::Vector4f left_homogeneous(0.0f, 1.0f, 0.0f, 1.0f);
+	Eigen::Vector4f front_homogeneous(1.0f, 0.0f, 0.0f, 1.0f);
+
+	m_top = (m_curInfo->matrix * top_homogeneous).head<3>() - m_curInfo->position;
+	m_left = (m_curInfo->matrix * left_homogeneous).head<3>() - m_curInfo->position;
+	m_front = (m_curInfo->matrix * front_homogeneous).head<3>() - m_curInfo->position;
 };
 
 Geometry::OOBB::OOBB(Eigen::RowVector3f _position, Eigen::RowVector3f _size, Eigen::RowVector3f _euler)
 {
 	m_curInfo = new Geometry::BoxInfo(_size, _position, _euler);
+};
+
+void Geometry::OOBB::updateCurInfo()
+{
+	m_curInfo = new Geometry::BoxInfo(m_curInfo->size, m_curInfo->position, m_curInfo->euler);
+};
+
+void Geometry::OOBB::yaw(float _degree)
+{
+	m_transform.update(m_curInfo);
+	// 范围[-180, 180]
+	float degree = m_curInfo->euler[2] + _degree;
+	if (degree < -180.0f)
+	{
+		m_curInfo->euler[2] = -180.0f;
+	}
+	else if (degree > 180.0f)
+	{
+		m_curInfo->euler[2] = 180.0f;
+	}
+	else
+	{
+		m_curInfo->euler[2] = degree;
+	}
+	updateCurInfo();
+};
+
+void Geometry::OOBB::roll(float _degree)
+{
+	m_transform.update(m_curInfo);
+	// 范围[-89.0, 89.0]
+	float degree = m_curInfo->euler[0] + _degree;
+	if (degree < -89.0f)
+	{
+		m_curInfo->euler[0] = -89.0f;
+	}
+	else if (degree > 89.0f)
+	{
+		m_curInfo->euler[0] = 89.0f;
+	}
+	else
+	{
+		m_curInfo->euler[0] = degree;
+	}
+	updateCurInfo();
+};
+
+void Geometry::OOBB::pitch(float _degree)
+{
+	m_transform.update(m_curInfo);
+	// 范围[-89.0, 89.0]
+	float degree = m_curInfo->euler[1] + _degree;
+	std::cout << degree << std::endl;
+	if (degree < -89.0f)
+	{
+		m_curInfo->euler[1] = -89.0f;
+	}
+	else if (degree > 89.0f)
+	{
+		m_curInfo->euler[1] = 89.0f;
+	}
+	else
+	{
+		m_curInfo->euler[1] = degree;
+	}
+	std::cout << (m_curInfo->euler[1]) << std::endl;
+	updateCurInfo();
 };
