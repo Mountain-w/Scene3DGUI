@@ -27,5 +27,6 @@ public:
 		glUseProgram(0);
 	}
 	void setMatrix(const std::string& _name, glm::mat4 _matrix) const;
+	void setI(const std::string& _name, int _val) const;
 };
 

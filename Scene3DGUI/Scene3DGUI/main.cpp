@@ -17,7 +17,7 @@ float pointSize = 1.0f;
 bool altPressed = false;
 //const char* pcdPath = R"(D:\pld\HZ\output\data\city_1\1684390331_000151000\RS128_1684390331_000151000.pcd)";
 //const char* pcdPath = R"(D:\workplace\scene_001.pcd)";
-const char* pcdPath = R"(D:\pld\HZ\output\data\2023-04-20-06-21-39\lidar\global_map.pcd)";
+const char* pcdPath = R"(D:\pld\HZ\bev_lane_base_reconstruction_1th_for_82_sample\data\2023-04-20-06-22-09\2023-04-20-06-22-09\global_map.pcd)";
 Eigen::RowVector3f pos(2.0f, 2.0f, 2.0f);
 Eigen::RowVector3f size(4.0f, 4.0f, 4.0f);
 Eigen::RowVector3f euler(0.0f, 0.0f, glm::radians(40.0f));
@@ -34,6 +34,7 @@ void rend(PointCloudInfo &_info)
     _shader.start();
     _shader.setMatrix("_viewMatrix", _camera.getMatrix());
     _shader.setMatrix("_projMatrix", _projMatrix);
+    _shader.setI("_colorScheme", 0);
     glBindVertexArray(_info.VAO);
     glDrawArrays(GL_POINTS, 0, _info.pointNum);
     _shader.end();
@@ -48,10 +49,11 @@ void rend2(Geometry::OOBB &oobb)
     _shader.start();
     _shader.setMatrix("_viewMatrix", _camera.getMatrix());
     _shader.setMatrix("_projMatrix", _projMatrix);
+    _shader.setI("_colorScheme", 1);
     oobb.update();
     glBindVertexArray(oobb.vao);
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_LINES, 34, GL_UNSIGNED_INT, 0);
     _shader.end();
 
 }
@@ -155,11 +157,11 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     {
     case MOUSESTATUS::LEFTCLICKED:
         if (altPressed) _camera.onMouseMove(_difference.x, _difference.y);
-        oobb.roll((float)_difference.x);
+        else oobb.roll((float)_difference.x);
         break;
     case MOUSESTATUS::MIDDLECLICKED:
         if (altPressed) _camera.move((float)_difference.x, (float)_difference.y);
-        oobb.pitch((float)_difference.x);
+        else oobb.pitch((float)_difference.x);
         break;
     case MOUSESTATUS::RIGHTCLICKED:
         oobb.yaw((float)_difference.x);
@@ -410,7 +412,7 @@ int testMoveObj()
     {
         processInput2(window);
 
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_DEPTH_TEST);
         glViewport(0, 0, _width, _height);

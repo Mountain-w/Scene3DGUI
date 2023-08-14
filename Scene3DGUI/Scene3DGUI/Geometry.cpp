@@ -156,6 +156,20 @@ void Geometry::AABB::update()
 	}
 	Eigen::MatrixXf cornerPoints = (m_curInfo->matrix * corners.transpose()).transpose();
 
+	// 更新前、左、上向量
+	Eigen::Vector4f top_homogeneous(0.0f, 0.0f, m_curInfo->size[2] / 2, 1.0f);
+	Eigen::Vector4f left_homogeneous(0.0f, m_curInfo->size[1] / 2, 0.0f, 1.0f);
+	Eigen::Vector4f front_homogeneous(m_curInfo->size[0] / 2, 0.0f, 0.0f, 1.0f);
+
+	top_homogeneous = m_curInfo->matrix * top_homogeneous;
+	left_homogeneous = m_curInfo->matrix * left_homogeneous;
+	front_homogeneous = m_curInfo->matrix * front_homogeneous;
+
+	m_top = top_homogeneous.head<3>() - m_curInfo->position;
+	m_left = left_homogeneous.head<3>() - m_curInfo->position;
+	m_front = front_homogeneous.head<3>() - m_curInfo->position;
+
+	// 八个角点
 	std::vector<GLfloat> vertexs;
 	for (int row = 0; row < cornerPoints.rows(); row++)
 	{
@@ -169,10 +183,49 @@ void Geometry::AABB::update()
 		vertexs.push_back(m_color(3));
 	}
 
+	// 三个向量
+	vertexs.push_back(m_curInfo->position[0]);
+	vertexs.push_back(m_curInfo->position[1]);
+	vertexs.push_back(m_curInfo->position[2]);
+	vertexs.push_back(0);
+	vertexs.push_back(255);
+	vertexs.push_back(255);
+	vertexs.push_back(255);
+	vertexs.push_back(255);
+
+	vertexs.push_back(front_homogeneous[0]);
+	vertexs.push_back(front_homogeneous[1]);
+	vertexs.push_back(front_homogeneous[2]);
+	vertexs.push_back(0);
+	vertexs.push_back(255);
+	vertexs.push_back(0);
+	vertexs.push_back(0);
+	vertexs.push_back(255);
+
+	vertexs.push_back(left_homogeneous[0]);
+	vertexs.push_back(left_homogeneous[1]);
+	vertexs.push_back(left_homogeneous[2]);
+	vertexs.push_back(0);
+	vertexs.push_back(0);
+	vertexs.push_back(255);
+	vertexs.push_back(0);
+	vertexs.push_back(255);
+
+	vertexs.push_back(top_homogeneous[0]);
+	vertexs.push_back(top_homogeneous[1]);
+	vertexs.push_back(top_homogeneous[2]);
+	vertexs.push_back(0);
+	vertexs.push_back(0);
+	vertexs.push_back(0);
+	vertexs.push_back(255);
+	vertexs.push_back(255);
+
 	GLuint indices[] = {
 		0, 1, 1, 7, 7, 2, 2, 0,
 		3, 6, 6, 4, 4, 5, 5, 3,
 		0, 3, 1, 6, 7, 4, 2, 5,
+		5, 0, 3, 2, 8, 9, 8, 10, 
+		8, 11
 	};
 
 	glGenVertexArrays(1, &vao);
@@ -199,15 +252,6 @@ void Geometry::AABB::update()
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-	// 更新前、左、上向量
-	Eigen::Vector4f top_homogeneous(0.0f, 0.0f, 1.0f, 1.0f);
-	Eigen::Vector4f left_homogeneous(0.0f, 1.0f, 0.0f, 1.0f);
-	Eigen::Vector4f front_homogeneous(1.0f, 0.0f, 0.0f, 1.0f);
-
-	m_top = (m_curInfo->matrix * top_homogeneous).head<3>() - m_curInfo->position;
-	m_left = (m_curInfo->matrix * left_homogeneous).head<3>() - m_curInfo->position;
-	m_front = (m_curInfo->matrix * front_homogeneous).head<3>() - m_curInfo->position;
 };
 
 Geometry::OOBB::OOBB(Eigen::RowVector3f _position, Eigen::RowVector3f _size, Eigen::RowVector3f _euler)
@@ -265,7 +309,6 @@ void Geometry::OOBB::pitch(float _degree)
 	m_transform.update(m_curInfo);
 	// 范围[-89.0, 89.0]
 	float degree = m_curInfo->euler[1] + _degree;
-	std::cout << degree << std::endl;
 	if (degree < -89.0f)
 	{
 		m_curInfo->euler[1] = -89.0f;
@@ -278,6 +321,5 @@ void Geometry::OOBB::pitch(float _degree)
 	{
 		m_curInfo->euler[1] = degree;
 	}
-	std::cout << (m_curInfo->euler[1]) << std::endl;
 	updateCurInfo();
 };
