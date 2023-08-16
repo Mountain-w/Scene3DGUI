@@ -6,6 +6,7 @@
 #include "Status.h"
 #include "PointCloudService.h"
 #include "Geometry.h"
+#include <Windows.h>
 
 Shader _shader;
 Camera _camera;
@@ -15,9 +16,9 @@ int _width = 1920;
 int _height = 1080;
 float pointSize = 1.0f;
 bool altPressed = false;
-//const char* pcdPath = R"(D:\pld\HZ\output\data\city_1\1684390331_000151000\RS128_1684390331_000151000.pcd)";
+const char* pcdPath = R"(C:\Users\47896\Desktop\20230703154911.000087_BlindLidar01.pcd)";
 //const char* pcdPath = R"(D:\workplace\scene_001.pcd)";
-const char* pcdPath = R"(D:\pld\HZ\bev_lane_base_reconstruction_1th_for_82_sample\data\2023-04-20-06-22-09\2023-04-20-06-22-09\global_map.pcd)";
+//const char* pcdPath = R"(D:\pld\HZ\bev_lane_base_reconstruction_1th_for_82_sample\data\2023-04-20-06-22-09\2023-04-20-06-22-09\global_map.pcd)";
 Eigen::RowVector3f pos(2.0f, 2.0f, 2.0f);
 Eigen::RowVector3f size(4.0f, 4.0f, 4.0f);
 Eigen::RowVector3f euler(0.0f, 0.0f, glm::radians(40.0f));
@@ -368,7 +369,63 @@ int testImGui()
     return 0;
     
 }
+void renderMenu(std::string &pcdPath)
+{
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImVec2 menuBarPos = viewport->Pos;
+    ImVec2 menuBarSize = ImVec2(viewport->Size.x, 30.0f);
 
+    ImGui::SetNextWindowPos(menuBarPos);
+    ImGui::SetNextWindowSize(menuBarSize);
+    ImGui::SetNextWindowViewport(viewport->ID);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    ImGui::Begin("MenuBar", nullptr,
+        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
+        ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar);
+    
+    if (ImGui::BeginMenuBar())
+    {
+        if (ImGui::BeginMenu("File"))
+        {
+            if (ImGui::MenuItem("New", "Ctrl+N")) {}
+            if (ImGui::MenuItem("Open", "Ctrl+O")) {
+                OPENFILENAMEA ofn;
+                CHAR szFile[MAX_PATH] = { 0 };
+
+                ZeroMemory(&ofn, sizeof(ofn));
+                ofn.lStructSize = sizeof(ofn);
+                ofn.hwndOwner = NULL;
+                ofn.lpstrFilter = "All Files (*.*)\0*.*\0";
+                ofn.lpstrFile = szFile;
+                ofn.nMaxFile = sizeof(szFile);
+                ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
+                
+                if (GetOpenFileNameA(&ofn))
+                {
+                    pcdPath = ofn.lpstrFile;
+                }
+            }
+            if (ImGui::MenuItem("Save", "Ctrl+S")) {}
+            if (ImGui::MenuItem("Exit", "Alt+F4")) {}
+            ImGui::EndMenu();
+        }
+
+        if (ImGui::BeginMenu("Edit"))
+        {
+            if (ImGui::MenuItem("Cut", "Ctrl+X")) {}
+            if (ImGui::MenuItem("Copy", "Ctrl+C")) {}
+            if (ImGui::MenuItem("Paste", "Ctrl+V")) {}
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMenuBar();
+    }
+
+    ImGui::End();
+    ImGui::PopStyleVar(2);
+}
 int testMoveObj()
 {
     // 初始化 glfw
@@ -399,38 +456,175 @@ int testMoveObj()
     glfwSetMouseButtonCallback(window, mouse_button_callback);
     glEnable(GL_DEPTH_TEST);
 
+    // 初始化Dear ImGui
+    ImGui::CreateContext();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init();
+
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.FramePadding = ImVec2(10, 10);
+    style.ItemSpacing = ImVec2(10, 5);
+
+
     _camera.setSpeed(1.0f);
     _shader.initShader(R"(glsl\vertexShader.glsl)", R"(glsl\fragmentShader.glsl)");
     oobb.setColor(255, 255, 0, 255);
     oobb.update();
     
     PointCloudInfo info;
-    PointCloudService::loadPcd(pcdPath, info);
-    std::cout << "读取到：" << info.pointNum << " 个点" << std::endl;
+    std::string _pcdPath = "";
+    bool loadPath = false;
+    /*PointCloudService::loadPcd(pcdPath, info);
+    std::cout << "读取到：" << info.pointNum << " 个点" << std::endl;*/
+    
+    int curWidth, curHeight;
+    int xpos, ypos;
     
     while (!glfwWindowShouldClose(window))
     {
+        glfwGetWindowSize(window, &curWidth, &curHeight);
+        glfwGetWindowPos(window, &xpos, &ypos);
         processInput2(window);
+        // 渲染UI
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        // 菜单栏
+        renderMenu(_pcdPath);
 
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glEnable(GL_DEPTH_TEST);
-        glViewport(0, 0, _width, _height);
-
-        rend(info);
+        ImGui::SetNextWindowPos(ImVec2(0, 30));
+        ImGui::SetNextWindowSize(ImVec2(curWidth / 4, curHeight));
+        ImGui::Begin("Tools", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+        if (ImGui::CollapsingHeader("tool1"))
+        {
+            ImGui::Button("3D框");
+        }
+        if (ImGui::CollapsingHeader("tool2"))
+        {
+            ImGui::Button("load...");
+        }
+        ImGui::End();
+        ImGui::Begin("Bottom");
+        ImGui::End();
+        if (_pcdPath != "" && !loadPath)
+        {
+            loadPath = true;
+            PointCloudService::loadPcd(_pcdPath.c_str(), info);
+            std::cout << "读取到：" << info.pointNum << " 个点" << std::endl;
+        }
+        if (loadPath)
+        {
+            glViewport(curWidth / 4, curHeight / 4, curWidth * 3 / 4, curHeight * 3 / 4);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            rend(info);
+        }
+        glLineWidth(2.0f);
         rend2(oobb);
 
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+    // 清理并关闭窗口
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
     glfwTerminate();
     return 0;
+}
+
+void RenderUI()
+{
+    if (ImGui::Button("Open File"))
+    {
+        OPENFILENAMEA ofn;
+        CHAR szFile[MAX_PATH] = { 0 };
+
+        ZeroMemory(&ofn, sizeof(ofn));
+        ofn.lStructSize = sizeof(ofn);
+        ofn.hwndOwner = NULL;
+        ofn.lpstrFilter = "All Files (*.*)\0*.*\0";
+        ofn.lpstrFile = szFile;
+        ofn.nMaxFile = sizeof(szFile);
+        ofn.Flags = OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
+
+        if (GetOpenFileNameA(&ofn))
+        {
+            printf("Selected file: %s", ofn.lpstrFile);
+        }
+    }
+}
+
+int testFileDialog()
+{
+    // 初始化 glfw
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+
+    GLFWwindow* window = glfwCreateWindow(_width, _height, "Scene3D", NULL, NULL);
+    if (window == NULL)
+    {
+        std::cout << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+    glfwMakeContextCurrent(window);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return -1;
+    }
+
+    // 初始化Dear ImGui
+    ImGui::CreateContext();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init();
+
+    // 主循环
+    while (!glfwWindowShouldClose(window))
+    {
+        glfwPollEvents();
+
+        // 渲染UI
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        RenderUI();
+
+        ImGuiIO& io = ImGui::GetIO();
+        glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+        glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        glfwSwapBuffers(window);
+    }
+
+    // 清理并关闭窗口
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
+
     return 0;
 }
+
 
 int main()
 {
     //testImGui();
     testMoveObj();
+    //testFileDialog();
+    //testScene();
     return 0;
 }
