@@ -173,6 +173,7 @@
     <ClCompile Include="imgui-docking\imgui_widgets.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="PointCloudService.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Status.cpp" />
   </ItemGroup>
@@ -191,6 +192,7 @@
     <ClInclude Include="imgui-docking\imstb_textedit.h" />
     <ClInclude Include="imgui-docking\imstb_truetype.h" />
     <ClInclude Include="PointCloudService.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Status.h" />
     <ClInclude Include="stb_image.h" />

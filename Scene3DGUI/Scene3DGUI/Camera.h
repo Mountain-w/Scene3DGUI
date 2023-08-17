@@ -55,4 +55,35 @@ private:
 	glm::vec3 m_centerPosition;  // 相机旋转的中心点
 };
 
+class SimpleCamera
+{
+public:
+	SimpleCamera(float _distance = 5.0f) :m_distance(_distance) {};
 
+	void update()
+	{
+		glm::vec3 _position = m_centerPosition + m_vector * m_distance;
+		m_vMatrix = glm::lookAt(_position, m_centerPosition, m_up);
+	};
+
+	void flash(glm::vec3 _center, glm::vec3 _vector)
+	{
+		m_centerPosition = _center;
+		m_vector = _vector;
+		update();
+	};
+
+	glm::mat4 getMatrix() { return m_vMatrix; }
+	void setDistance(float _distance) 
+	{ 
+		m_distance = _distance; 
+		update();
+	}
+
+private:
+	float m_distance = 5.0f;				// 相机位置与中心点的距离
+	glm::mat4 m_vMatrix{1.0f};				// lookat矩阵
+	glm::vec3 m_vector{ 0.0f };				// 中心点看向相机的向量
+	glm::vec3 m_centerPosition{ 0.0f };		// 中心点位置
+	glm::vec3 m_up{ 0.0f, 0.0f, 1.0f };		// 穹顶向量
+};

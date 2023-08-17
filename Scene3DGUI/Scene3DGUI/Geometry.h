@@ -71,6 +71,17 @@ namespace Geometry
 		void moveZ(float _distance);					// 朝向自身坐标系 z 移动
 		void resize(RESIZETYPE _type, float _distance); // 修改3D框大小
 		void setColor(int r, int g, int b, int a);		// 设置颜色
+		glm::vec3 getTop(){ return glm::normalize(glm::vec3(m_top[0], m_top[1], m_top[2])); }
+		glm::vec3 getLeft() { return glm::normalize(glm::vec3(m_left[0], m_left[1], m_left[2])); }
+		glm::vec3 getFront() { return glm::normalize(glm::vec3(m_front[0], m_front[1], m_front[2])); }
+		glm::vec3 getCenter() 
+		{
+			return glm::vec3(
+				m_curInfo->position[0],
+				m_curInfo->position[1],
+				m_curInfo->position[2]
+			);
+		}
 
 	public:
 		GLuint vao;										// 用于可视化

@@ -10,12 +10,17 @@
 
 Shader _shader;
 Camera _camera;
+SimpleCamera _topCamera{1};
+SimpleCamera _leftCamera{1};
+SimpleCamera _frontCamera{1};
+
 Status _status;
 glm::mat4 _projMatrix(1.0f);
 int _width = 1920;
 int _height = 1080;
 float pointSize = 1.0f;
 bool altPressed = false;
+bool change = false;
 const char* pcdPath = R"(C:\Users\47896\Desktop\20230703154911.000087_BlindLidar01.pcd)";
 //const char* pcdPath = R"(D:\workplace\scene_001.pcd)";
 //const char* pcdPath = R"(D:\pld\HZ\bev_lane_base_reconstruction_1th_for_82_sample\data\2023-04-20-06-22-09\2023-04-20-06-22-09\global_map.pcd)";
@@ -57,6 +62,31 @@ void rend2(Geometry::OOBB &oobb)
     glDrawElements(GL_LINES, 34, GL_UNSIGNED_INT, 0);
     _shader.end();
 
+}
+
+// 渲染视图
+void rendView(SimpleCamera &camera_, PointCloudInfo &_info, Geometry::OOBB &oobb, int view, float width, float height)
+{
+    if (view == 0){camera_.flash(oobb.getCenter(), oobb.getFront()); }
+    else if (view == 1){camera_.flash(oobb.getCenter(), oobb.getTop()); }
+    else if (view == 2) { camera_.flash(oobb.getCenter(), oobb.getLeft()); }
+
+    
+    //_projMatrix = glm::perspective(glm::radians(45.0f), (float)_width / (float)_height, 0.1f, 500.0f);
+    float ratio = width / height;
+    _projMatrix = glm::ortho(-ratio * 3, ratio * 3, -1.0f * 3, 1.0f * 3, -1.0f, 100.0f);
+    _shader.start();
+    _shader.setMatrix("_viewMatrix", camera_.getMatrix());
+    _shader.setMatrix("_projMatrix", _projMatrix);
+    _shader.setI("_colorScheme", 0);
+    glBindVertexArray(_info.VAO);
+    glDrawArrays(GL_POINTS, 0, _info.pointNum);
+    _shader.setI("_colorScheme", 1);
+    oobb.update();
+    glBindVertexArray(oobb.vao);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glDrawElements(GL_LINES, 34, GL_UNSIGNED_INT, 0);
+    _shader.end();
 }
 
 // 事件监听
@@ -405,6 +435,7 @@ void renderMenu(std::string &pcdPath)
                 if (GetOpenFileNameA(&ofn))
                 {
                     pcdPath = ofn.lpstrFile;
+                    change = true;
                 }
             }
             if (ImGui::MenuItem("Save", "Ctrl+S")) {}
@@ -473,13 +504,12 @@ int testMoveObj()
     
     PointCloudInfo info;
     std::string _pcdPath = "";
-    bool loadPath = false;
     /*PointCloudService::loadPcd(pcdPath, info);
     std::cout << "读取到：" << info.pointNum << " 个点" << std::endl;*/
     
     int curWidth, curHeight;
     int xpos, ypos;
-    
+    bool loadPath = false;
     while (!glfwWindowShouldClose(window))
     {
         glfwGetWindowSize(window, &curWidth, &curHeight);
@@ -504,23 +534,32 @@ int testMoveObj()
             ImGui::Button("load...");
         }
         ImGui::End();
-        ImGui::Begin("Bottom");
-        ImGui::End();
-        if (_pcdPath != "" && !loadPath)
+        //ImGui::Begin("Bottom");
+        //ImGui::End();
+        if (change)
         {
             loadPath = true;
             PointCloudService::loadPcd(_pcdPath.c_str(), info);
             std::cout << "读取到：" << info.pointNum << " 个点" << std::endl;
+            change = false;
+            loadPath = true;
         }
         if (loadPath)
         {
-            glViewport(curWidth / 4, curHeight / 4, curWidth * 3 / 4, curHeight * 3 / 4);
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glViewport(curWidth / 4, curHeight / 16, curWidth / 4, curHeight * 3 / 16);
+            rendView(_topCamera, info, oobb, 1, curWidth / 4, curHeight * 3 / 16);
+            glViewport(curWidth / 2, curHeight / 16, curWidth / 4, curHeight * 3 / 16);
+            rendView(_leftCamera, info, oobb, 2, curWidth / 4, curHeight * 3 / 16);
+            glViewport(curWidth * 3 / 4, curHeight / 16, curWidth / 4, curHeight * 3 / 16);
+            rendView(_frontCamera, info, oobb, 0, curWidth / 4, curHeight * 3 / 16);
+            glViewport(curWidth / 4, curHeight / 4, curWidth * 3 / 4, curHeight * 3 / 4);
             rend(info);
+            glLineWidth(2.0f);
+            rend2(oobb);
         }
-        glLineWidth(2.0f);
-        rend2(oobb);
+        
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
