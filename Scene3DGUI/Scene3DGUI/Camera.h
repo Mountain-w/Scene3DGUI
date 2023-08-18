@@ -79,6 +79,7 @@ public:
 		m_distance = _distance; 
 		update();
 	}
+	void setUp(glm::vec3 _up) { m_up = _up; }
 
 private:
 	float m_distance = 5.0f;				// 相机位置与中心点的距离

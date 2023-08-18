@@ -498,6 +498,7 @@ int testMoveObj()
 
 
     _camera.setSpeed(1.0f);
+    _topCamera.setUp(glm::vec3(0.0f, 1.0f, 0.0f));
     _shader.initShader(R"(glsl\vertexShader.glsl)", R"(glsl\fragmentShader.glsl)");
     oobb.setColor(255, 255, 0, 255);
     oobb.update();
